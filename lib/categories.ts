@@ -7,6 +7,7 @@ export const DISPLAY_CATEGORIES: DisplayCategory[] = [
   { slug: "smartphones", label: "Smartphones" },
   { slug: "laptops", label: "Laptops" },
   { slug: "fragrances", label: "Fragrances" },
+  { slug: "beauty", label: "Beauty" },
   { slug: "skincare", label: "Skincare" },
   { slug: "groceries", label: "Groceries" },
   { slug: "furniture", label: "Furniture" },

@@ -1,9 +1,16 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import type { Product } from "@/types/product";
-import { getAllProducts, searchProducts } from "@/lib/api";
+import { searchProducts } from "@/lib/api";
 import { normalizeCategorySlug } from "@/lib/categories";
+import {
+  getCachedCatalog,
+  getCachedSearch,
+  loadCatalogWithCache,
+  loadSearchWithCache,
+} from "@/lib/listing-cache";
 import { EmptyState } from "@/components/empty-state";
 import { ErrorState } from "@/components/error-state";
 import { Header } from "@/components/header";
@@ -32,23 +39,38 @@ function filterByCategory(
 }
 
 export function ProductListingClient() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const cachedCatalog = getCachedCatalog();
+
   const [searchQuery, setSearchQuery] = useState("");
   const [appliedSearch, setAppliedSearch] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [allProducts, setAllProducts] = useState<Product[]>(
+    () => cachedCatalog?.products ?? [],
+  );
   const [searchResults, setSearchResults] = useState<Product[]>([]);
-  const [catalogLoading, setCatalogLoading] = useState(true);
+  const [catalogLoading, setCatalogLoading] = useState(!cachedCatalog);
   const [searchLoading, setSearchLoading] = useState(false);
   const [catalogError, setCatalogError] = useState<string | null>(null);
   const [searchError, setSearchError] = useState<string | null>(null);
 
+  const categoryParam = searchParams.get("category");
+  const selectedCategory = categoryParam
+    ? normalizeCategorySlug(categoryParam)
+    : null;
+
   const loadCatalog = useCallback(async () => {
-    setCatalogLoading(true);
+    const hasCache = Boolean(getCachedCatalog());
+
+    if (!hasCache) {
+      setCatalogLoading(true);
+    }
+
     setCatalogError(null);
 
     try {
-      const data = await getAllProducts();
+      const data = await loadCatalogWithCache();
       setAllProducts(data.products);
     } catch (err) {
       setAllProducts([]);
@@ -74,11 +96,11 @@ export function ProductListingClient() {
 
     const timer = window.setTimeout(() => {
       setAppliedSearch(trimmed);
-      setSelectedCategory(null);
+      router.replace("/", { scroll: false });
     }, SEARCH_DEBOUNCE_MS);
 
     return () => window.clearTimeout(timer);
-  }, [searchQuery]);
+  }, [searchQuery, router]);
 
   useEffect(() => {
     if (!appliedSearch) {
@@ -88,15 +110,27 @@ export function ProductListingClient() {
     }
 
     let cancelled = false;
+    const cached = getCachedSearch(appliedSearch);
+
+    if (cached) {
+      setSearchResults(cached);
+      setSearchLoading(false);
+      setSearchError(null);
+      return;
+    }
 
     const runSearch = async () => {
       setSearchLoading(true);
       setSearchError(null);
 
       try {
-        const data = await searchProducts(appliedSearch);
+        const products = await loadSearchWithCache(appliedSearch, async () => {
+          const data = await searchProducts(appliedSearch);
+          return data.products;
+        });
+
         if (!cancelled) {
-          setSearchResults(data.products);
+          setSearchResults(products);
         }
       } catch (err) {
         if (!cancelled) {
@@ -148,15 +182,22 @@ export function ProductListingClient() {
   }, [currentPage, totalPages]);
 
   const handleCategoryChange = (categorySlug: string | null) => {
-    setSelectedCategory(categorySlug);
     setSearchQuery("");
     setAppliedSearch("");
+
+    if (categorySlug) {
+      router.replace(`/?category=${encodeURIComponent(categorySlug)}`, {
+        scroll: false,
+      });
+    } else {
+      router.replace("/", { scroll: false });
+    }
   };
 
   const handleReset = () => {
     setSearchQuery("");
     setAppliedSearch("");
-    setSelectedCategory(null);
+    router.replace("/", { scroll: false });
   };
 
   const handleRetry = () => {
@@ -169,7 +210,9 @@ export function ProductListingClient() {
       setSearchError(null);
       setSearchLoading(true);
       searchProducts(appliedSearch)
-        .then((data) => setSearchResults(data.products))
+        .then((data) => {
+          setSearchResults(data.products);
+        })
         .catch((err) =>
           setSearchError(
             err instanceof Error ? err.message : "Failed to search products.",
@@ -184,7 +227,8 @@ export function ProductListingClient() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const loading = catalogLoading || searchLoading;
+  const loading =
+    (catalogLoading && allProducts.length === 0) || searchLoading;
   const error = catalogError ?? searchError;
   const itemCount = filteredProducts.length;
   const isFiltered = Boolean(appliedSearch || selectedCategory);
