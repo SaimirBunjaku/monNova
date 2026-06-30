@@ -1,5 +1,6 @@
 "use client";
 
+import type { ChangeEvent } from "react";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -53,7 +54,7 @@ function CartIcon({ className }: { className?: string }) {
 
 function Logo() {
   return (
-    <Link href="/" className="inline-flex items-center" aria-label="NOVA home">
+    <Link href="/" className="inline-flex cursor-pointer items-center" aria-label="NOVA home">
       <span className="font-heading text-[21px] font-extrabold leading-none tracking-tight text-ink">
         NOV<span className="text-primary">A</span>
       </span>
@@ -65,7 +66,7 @@ function CartButton() {
   return (
     <button
       type="button"
-      className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] border border-border bg-surface text-ink transition-colors hover:bg-page-bg"
+      className="relative flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-[10px] border border-border bg-surface text-ink transition-all duration-300 ease-[cubic-bezier(0.25,0.1,0.25,1)] hover:bg-page-bg"
       aria-label={`Cart, ${CART_COUNT} items`}
     >
       <CartIcon />
@@ -78,21 +79,36 @@ function CartButton() {
   );
 }
 
-export function Header() {
+interface HeaderProps {
+  searchQuery: string;
+  onSearchQueryChange: (query: string) => void;
+}
+
+export function Header({ searchQuery, onSearchQueryChange }: HeaderProps) {
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+
+  const searchInputProps = {
+    type: "search" as const,
+    placeholder: "Search products",
+    value: searchQuery,
+    onChange: (event: ChangeEvent<HTMLInputElement>) => {
+      onSearchQueryChange(event.target.value);
+    },
+    className:
+      "h-10 w-full rounded-[10px] border border-border bg-page-bg py-0 pl-10 pr-4 text-sm font-medium text-ink placeholder:text-muted focus:border-primary focus:bg-surface focus:outline-none",
+  };
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-surface">
       <div className="mx-auto flex h-14 w-full max-w-[1200px] items-center gap-4 px-5 md:h-[66px] md:gap-8 md:px-7 lg:px-8">
         <Logo />
 
-        {/* Desktop navigation */}
         <nav className="hidden items-center gap-6 md:flex" aria-label="Main navigation">
           {NAV_LINKS.map((link) => (
             <Link
               key={link.label}
               href={link.href}
-              className={`text-sm transition-colors hover:text-ink ${
+              className={`cursor-pointer text-sm transition-colors duration-300 ease-[cubic-bezier(0.25,0.1,0.25,1)] hover:text-ink ${
                 link.active
                   ? "font-semibold text-ink"
                   : "font-medium text-body"
@@ -103,30 +119,23 @@ export function Header() {
           ))}
         </nav>
 
-        {/* Desktop search */}
         <div className="hidden flex-1 justify-end md:flex">
           <label className="relative w-full max-w-[280px]">
             <span className="sr-only">Search products</span>
             <SearchIcon className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
-            <input
-              type="search"
-              placeholder="Search products"
-              className="h-10 w-full rounded-[10px] border border-border bg-page-bg py-0 pl-10 pr-4 text-sm font-medium text-ink placeholder:text-muted focus:border-primary focus:bg-surface focus:outline-none"
-            />
+            <input {...searchInputProps} />
           </label>
         </div>
 
-        {/* Desktop cart */}
         <div className="hidden md:block">
           <CartButton />
         </div>
 
-        {/* Mobile actions */}
         <div className="ml-auto flex items-center gap-2 md:hidden">
           <button
             type="button"
             onClick={() => setMobileSearchOpen((open) => !open)}
-            className="flex h-10 w-10 items-center justify-center rounded-[10px] border border-border bg-surface text-ink transition-colors hover:bg-page-bg"
+            className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-[10px] border border-border bg-surface text-ink transition-all duration-300 ease-[cubic-bezier(0.25,0.1,0.25,1)] hover:bg-page-bg"
             aria-label={mobileSearchOpen ? "Close search" : "Open search"}
             aria-expanded={mobileSearchOpen}
           >
@@ -136,18 +145,12 @@ export function Header() {
         </div>
       </div>
 
-      {/* Mobile search panel */}
       {mobileSearchOpen && (
         <div className="border-t border-border px-5 py-3 md:hidden">
           <label className="relative block">
             <span className="sr-only">Search products</span>
             <SearchIcon className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
-            <input
-              type="search"
-              placeholder="Search products"
-              autoFocus
-              className="h-10 w-full rounded-[10px] border border-border bg-page-bg py-0 pl-10 pr-4 text-sm font-medium text-ink placeholder:text-muted focus:border-primary focus:bg-surface focus:outline-none"
-            />
+            <input {...searchInputProps} autoFocus />
           </label>
         </div>
       )}

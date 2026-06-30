@@ -94,12 +94,14 @@ interface ProductCardProps {
   product: Product;
   href?: string;
   primaryButton?: boolean;
+  animationDelay?: number;
 }
 
 export function ProductCard({
   product,
   href,
   primaryButton = false,
+  animationDelay = 0,
 }: ProductCardProps) {
   const reviewCount = getReviewCount(product);
   const showDiscount = hasDiscount(product);
@@ -120,16 +122,19 @@ export function ProductCard({
   );
 
   const titleContent = (
-    <h2 className="mb-2 line-clamp-2 text-[15px] font-semibold leading-[1.35] text-ink transition-colors group-hover:text-primary">
+    <h2 className="mb-2 line-clamp-2 cursor-pointer text-[15px] font-semibold leading-[1.35] text-ink">
       {product.title}
     </h2>
   );
 
   return (
-    <article className="group flex flex-col rounded-2xl border border-border bg-surface p-3 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(20,18,30,0.08)]">
+    <article
+      className="animate-card-in group relative z-0 flex flex-col rounded-2xl border border-border bg-surface p-3 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform hover:z-10 hover:scale-[1.025]"
+      style={{ animationDelay: `${animationDelay}ms` }}
+    >
       <div className="relative mb-3 aspect-square overflow-hidden rounded-xl bg-image-bg">
         {href ? (
-          <Link href={href} className="block h-full w-full">
+          <Link href={href} className="block h-full w-full cursor-pointer">
             {imageContent}
           </Link>
         ) : (
@@ -145,7 +150,7 @@ export function ProductCard({
         <button
           type="button"
           onClick={stopCardNavigation}
-          className="absolute right-2.5 top-2.5 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-surface/90 text-muted transition-colors hover:text-ink"
+          className="absolute right-2.5 top-2.5 z-10 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-surface/90 text-muted backdrop-blur-sm transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:text-accent"
           aria-label={`Add ${product.title} to wishlist`}
         >
           <HeartIcon />
@@ -170,7 +175,7 @@ export function ProductCard({
         <button
           type="button"
           onClick={stopCardNavigation}
-          className={`mt-auto flex h-10 w-full items-center justify-center gap-2 rounded-[10px] text-sm font-semibold transition-colors ${
+          className={`group/btn mt-auto flex h-10 w-full cursor-pointer items-center justify-center gap-2 rounded-[10px] text-sm font-semibold transition-[background-color,border-color,color] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
             primaryButton
               ? "bg-primary text-white hover:bg-primary-hover"
               : "border border-primary text-primary hover:bg-primary hover:text-white"
