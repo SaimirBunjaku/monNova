@@ -17,7 +17,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "NOVA Storefront",
+  title: "monNova Store",
   description: "A modern e-commerce storefront built with Next.js",
 };
 
