@@ -2,16 +2,14 @@
 
 import type { ChangeEvent } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useCart } from "@/components/cart-provider";
 import { useFavorites } from "@/components/favorites-provider";
 
 const NAV_LINKS = [
   { label: "Shop", href: "/" },
   { label: "Favorites", href: "/favorites" },
-  { label: "Deals", href: "#" },
-  { label: "About", href: "#" },
 ];
 
 function SearchIcon({ className }: { className?: string }) {
@@ -133,20 +131,55 @@ function CartButton() {
 }
 
 interface HeaderProps {
-  searchQuery: string;
-  onSearchQueryChange: (query: string) => void;
+  searchQuery?: string;
+  onSearchQueryChange?: (query: string) => void;
 }
 
-export function Header({ searchQuery, onSearchQueryChange }: HeaderProps) {
+const OFF_HOME_SEARCH_DEBOUNCE_MS = 400;
+
+export function Header({
+  searchQuery = "",
+  onSearchQueryChange,
+}: HeaderProps) {
+  const router = useRouter();
   const pathname = usePathname();
+  const isHome = pathname === "/";
+  const [offHomeQuery, setOffHomeQuery] = useState("");
+  const offHomeTimerRef = useRef<number | null>(null);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+
+  const clearOffHomeTimer = useCallback(() => {
+    if (offHomeTimerRef.current !== null) {
+      window.clearTimeout(offHomeTimerRef.current);
+      offHomeTimerRef.current = null;
+    }
+  }, []);
+
+  useEffect(() => clearOffHomeTimer, [clearOffHomeTimer]);
+
+  const handleSearchChange = (value: string) => {
+    if (isHome) {
+      onSearchQueryChange?.(value);
+      return;
+    }
+
+    setOffHomeQuery(value);
+    clearOffHomeTimer();
+
+    offHomeTimerRef.current = window.setTimeout(() => {
+      const trimmed = value.trim();
+      router.push(trimmed ? `/?q=${encodeURIComponent(trimmed)}` : "/");
+    }, OFF_HOME_SEARCH_DEBOUNCE_MS);
+  };
+
+  const displayedSearchQuery = isHome ? searchQuery : offHomeQuery;
 
   const searchInputProps = {
     type: "search" as const,
     placeholder: "Search products",
-    value: searchQuery,
+    value: displayedSearchQuery,
     onChange: (event: ChangeEvent<HTMLInputElement>) => {
-      onSearchQueryChange(event.target.value);
+      handleSearchChange(event.target.value);
     },
     className:
       "h-10 w-full rounded-[10px] border border-border bg-page-bg py-0 pl-10 pr-4 text-sm font-medium text-ink placeholder:text-muted focus:border-primary focus:bg-surface focus:outline-none",

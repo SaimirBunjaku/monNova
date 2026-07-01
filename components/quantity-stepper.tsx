@@ -1,7 +1,5 @@
 "use client";
 
-import { useState } from "react";
-
 interface QuantityStepperProps {
   value: number;
   onChange: (value: number) => void;
@@ -75,9 +73,4 @@ export function QuantityStepper({
       </button>
     </div>
   );
-}
-
-export function useQuantity(initial = 1) {
-  const [quantity, setQuantity] = useState(initial);
-  return { quantity, setQuantity };
 }

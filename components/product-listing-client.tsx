@@ -42,8 +42,14 @@ export function ProductListingClient() {
   const searchParams = useSearchParams();
   const cachedCatalog = getCachedCatalog();
 
-  const [searchQuery, setSearchQuery] = useState("");
-  const [appliedSearch, setAppliedSearch] = useState("");
+  const categoryParam = searchParams.get("category");
+  const queryParam = searchParams.get("q")?.trim() ?? "";
+  const selectedCategory = categoryParam
+    ? normalizeCategorySlug(categoryParam)
+    : null;
+
+  const [searchQuery, setSearchQuery] = useState(queryParam);
+  const [appliedSearch, setAppliedSearch] = useState(queryParam);
   const [sortOption, setSortOption] = useState<SortOption>("popular");
   const [currentPage, setCurrentPage] = useState(1);
   const [allProducts, setAllProducts] = useState<Product[]>(
@@ -51,11 +57,6 @@ export function ProductListingClient() {
   );
   const [catalogLoading, setCatalogLoading] = useState(!cachedCatalog);
   const [catalogError, setCatalogError] = useState<string | null>(null);
-
-  const categoryParam = searchParams.get("category");
-  const selectedCategory = categoryParam
-    ? normalizeCategorySlug(categoryParam)
-    : null;
 
   const loadCatalog = useCallback(async () => {
     const hasCache = Boolean(getCachedCatalog());
@@ -84,20 +85,43 @@ export function ProductListingClient() {
   }, [loadCatalog]);
 
   useEffect(() => {
+    const q = searchParams.get("q")?.trim() ?? "";
+    setSearchQuery(q);
+    setAppliedSearch(q);
+  }, [searchParams]);
+
+  useEffect(() => {
     const trimmed = searchQuery.trim();
 
     if (!trimmed) {
       setAppliedSearch("");
+
+      if (queryParam) {
+        if (selectedCategory) {
+          router.replace(`/?category=${encodeURIComponent(selectedCategory)}`, {
+            scroll: false,
+          });
+        } else {
+          router.replace("/", { scroll: false });
+        }
+      }
+
       return;
     }
 
     const timer = window.setTimeout(() => {
       setAppliedSearch(trimmed);
-      router.replace("/", { scroll: false });
+
+      const params = new URLSearchParams();
+      params.set("q", trimmed);
+      if (selectedCategory) {
+        params.set("category", selectedCategory);
+      }
+      router.replace(`/?${params.toString()}`, { scroll: false });
     }, SEARCH_DEBOUNCE_MS);
 
     return () => window.clearTimeout(timer);
-  }, [searchQuery, router]);
+  }, [searchQuery, router, selectedCategory, queryParam]);
 
   useEffect(() => {
     setCurrentPage(1);

@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
 import { useFavorites } from "@/components/favorites-provider";
 import { Header } from "@/components/header";
 import { ProductGrid } from "@/components/product-grid";
@@ -10,13 +9,12 @@ import { favoriteToProduct } from "@/types/favorite";
 
 export function FavoritesPageClient() {
   const { items, clearFavorites } = useFavorites();
-  const [searchQuery, setSearchQuery] = useState("");
 
   const products = items.map(favoriteToProduct);
 
   return (
     <>
-      <Header searchQuery={searchQuery} onSearchQueryChange={setSearchQuery} />
+      <Header />
 
       <main className="mx-auto w-full max-w-[1200px] px-5 md:px-7 lg:px-8">
         <div className="pt-8 md:pt-10">

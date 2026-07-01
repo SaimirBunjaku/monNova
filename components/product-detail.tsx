@@ -68,7 +68,6 @@ interface ProductDetailProps {
 export function ProductDetail({ product }: ProductDetailProps) {
   const router = useRouter();
   const { addToCart } = useCart();
-  const [searchQuery, setSearchQuery] = useState("");
   const [quantity, setQuantity] = useState(1);
 
   const reviewCount = getReviewCount(product);
@@ -82,10 +81,14 @@ export function ProductDetail({ product }: ProductDetailProps) {
   const shipping = formatShippingValue(
     product.shippingInformation ?? "3–5 days",
   );
+  const inStock = product.stock > 0;
+  const stockLabel = inStock
+    ? `In stock — ${shipping}`
+    : "Out of stock";
 
   return (
     <>
-      <Header searchQuery={searchQuery} onSearchQueryChange={setSearchQuery} />
+      <Header />
 
       <main className="mx-auto w-full max-w-[1200px] px-5 md:px-7 lg:px-8">
         <nav
@@ -126,12 +129,9 @@ export function ProductDetail({ product }: ProductDetailProps) {
               <span className="text-sm font-medium text-ink">
                 {product.rating.toFixed(2)}
               </span>
-              <button
-                type="button"
-                className="cursor-pointer text-sm font-medium text-primary transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:text-primary-hover"
-              >
+              <span className="text-sm font-medium text-muted">
                 {reviewCount} reviews
-              </button>
+              </span>
             </div>
 
             <div className="mt-6 flex flex-wrap items-center gap-3">
@@ -154,9 +154,18 @@ export function ProductDetail({ product }: ProductDetailProps) {
 
             <hr className="my-6 border-border" />
 
-            <div className="flex items-center gap-2 text-sm font-medium text-success">
-              <span className="h-2 w-2 rounded-full bg-success" aria-hidden="true" />
-              In stock — ships in 3–5 days
+            <div
+              className={`flex items-center gap-2 text-sm font-medium ${
+                inStock ? "text-success" : "text-accent"
+              }`}
+            >
+              <span
+                className={`h-2 w-2 rounded-full ${
+                  inStock ? "bg-success" : "bg-accent"
+                }`}
+                aria-hidden="true"
+              />
+              {stockLabel}
             </div>
 
             {/* Mobile: stepper + add to cart row, buy now below. Desktop: all three in one row. */}

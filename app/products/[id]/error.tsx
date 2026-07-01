@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
 import { ErrorState } from "@/components/error-state";
 import { Header } from "@/components/header";
 
@@ -11,11 +10,9 @@ interface ProductErrorProps {
 }
 
 export default function ProductError({ error, reset }: ProductErrorProps) {
-  const [searchQuery, setSearchQuery] = useState("");
-
   return (
     <>
-      <Header searchQuery={searchQuery} onSearchQueryChange={setSearchQuery} />
+      <Header />
       <main className="mx-auto w-full max-w-[1200px] px-5 py-16 md:px-7 lg:px-8">
         <ErrorState
           message={error.message || "Something went wrong loading this product."}

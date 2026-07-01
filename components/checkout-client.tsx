@@ -25,7 +25,6 @@ export function CheckoutClient() {
     clearCart,
   } = useCart();
 
-  const [searchQuery, setSearchQuery] = useState("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [address, setAddress] = useState("");
@@ -55,7 +54,7 @@ export function CheckoutClient() {
   if (orderConfirmation) {
     return (
       <>
-        <Header searchQuery={searchQuery} onSearchQueryChange={setSearchQuery} />
+        <Header />
         <OrderSuccess order={orderConfirmation} />
       </>
     );
@@ -64,7 +63,7 @@ export function CheckoutClient() {
   if (isEmpty) {
     return (
       <>
-        <Header searchQuery={searchQuery} onSearchQueryChange={setSearchQuery} />
+        <Header />
         <main className="mx-auto max-w-lg px-5 py-16 text-center md:px-7">
           <div className="rounded-2xl border border-border bg-surface px-6 py-12">
             <h1 className="mb-2 font-heading text-xl font-bold text-ink">
@@ -87,7 +86,7 @@ export function CheckoutClient() {
 
   return (
     <>
-      <Header searchQuery={searchQuery} onSearchQueryChange={setSearchQuery} />
+      <Header />
       <main className="mx-auto w-full max-w-[1200px] px-5 py-8 md:px-7 lg:px-8">
         <nav className="mb-6 text-sm font-medium text-muted" aria-label="Breadcrumb">
           <Link href="/" className="transition-colors hover:text-ink">

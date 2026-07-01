@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { getCategories } from "@/lib/api";
 import { DISPLAY_CATEGORIES } from "@/lib/categories";
 import {
   SORT_LABELS,
@@ -67,15 +66,6 @@ export function SearchFilterBar({
 }: SearchFilterBarProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const chipRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
-  const [, setApiCategories] = useState<string[]>([]);
-
-  useEffect(() => {
-    getCategories()
-      .then(setApiCategories)
-      .catch(() => {
-        // Chips use a fixed display list; API fetch is for normalization only.
-      });
-  }, []);
 
   useEffect(() => {
     const container = scrollRef.current;
