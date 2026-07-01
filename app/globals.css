@@ -314,6 +314,11 @@ html.nova-splash-pending #nova-splash {
   pointer-events: none;
 }
 
+#nova-splash.nova-splash-done {
+  display: none !important;
+  pointer-events: none;
+}
+
 .nova-splash-stars {
   position: absolute;
   inset: 0;

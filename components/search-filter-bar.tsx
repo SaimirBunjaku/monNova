@@ -132,7 +132,7 @@ export function SearchFilterBar({
     <div className="mt-5 md:mt-6">
       <div
         ref={scrollRef}
-        className="horizontal-scroll chip-scroll flex gap-2.5 overflow-x-auto pb-2 pt-0.5 md:flex-wrap md:overflow-visible md:pb-0"
+        className="horizontal-scroll chip-scroll flex gap-2.5 overflow-x-auto pb-3 pt-0.5 md:flex-wrap md:overflow-visible md:pb-0"
       >
         <CategoryChip
           label="All"

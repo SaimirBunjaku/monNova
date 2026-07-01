@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import type { Product } from "@/types/product";
+import { FavoriteButton } from "@/components/favorite-button";
 
 function ImagePlaceholderIcon({ className }: { className?: string }) {
   return (
@@ -57,6 +58,11 @@ export function ProductGallery({ product }: ProductGalleryProps) {
   return (
     <div className="w-full">
       <div className="relative aspect-square overflow-hidden rounded-2xl bg-image-bg">
+        <FavoriteButton
+          product={product}
+          size="md"
+          className="absolute right-4 top-4 z-10 border border-border/80 bg-surface shadow-sm"
+        />
         {activeImage ? (
           <Image
             key={activeImage}

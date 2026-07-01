@@ -30,3 +30,12 @@ export function hasDiscount(product: Product): boolean {
 export function getReviewCount(product: Product): number {
   return product.reviews?.length ?? 0;
 }
+
+/** Strip redundant "ship(s)" wording when the label is already "Shipping". */
+export function formatShippingValue(shippingInformation: string): string {
+  const trimmed = shippingInformation.trim();
+  const withoutShipPrefix = trimmed.replace(/^ships?\s+(?:in\s+)?/i, "");
+  const value = withoutShipPrefix.length > 0 ? withoutShipPrefix : trimmed;
+
+  return value.replace(/^([a-z])/, (char) => char.toUpperCase());
+}

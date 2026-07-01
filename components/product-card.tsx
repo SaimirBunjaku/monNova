@@ -6,29 +6,9 @@ import Image from "next/image";
 import type { Product } from "@/types/product";
 import { formatDiscount, getReviewCount, hasDiscount } from "@/lib/product-utils";
 import { useCart } from "@/components/cart-provider";
+import { FavoriteButton } from "@/components/favorite-button";
 import { Price } from "@/components/price";
 import { Rating } from "@/components/rating";
-
-function HeartIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      width="18"
-      height="18"
-      viewBox="0 0 18 18"
-      fill="none"
-      aria-hidden="true"
-    >
-      <path
-        d="M9 15.35 3.3 9.65a3.25 3.25 0 0 1 0-4.6 3.25 3.25 0 0 1 4.6 0L9 6.15l1.1-1.1a3.25 3.25 0 0 1 4.6 4.6L9 15.35Z"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
 
 function CartIcon({ className }: { className?: string }) {
   return (
@@ -149,14 +129,11 @@ export function ProductCard({
           </span>
         )}
 
-        <button
-          type="button"
+        <FavoriteButton
+          product={product}
+          className="absolute right-2.5 top-2.5 z-10"
           onClick={stopCardNavigation}
-          className="absolute right-2.5 top-2.5 z-10 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-surface/90 text-muted backdrop-blur-sm transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:text-accent"
-          aria-label={`Add ${product.title} to wishlist`}
-        >
-          <HeartIcon />
-        </button>
+        />
       </div>
 
       <div className="flex flex-1 flex-col">

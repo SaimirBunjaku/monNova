@@ -11,7 +11,7 @@ const EXIT_DURATION_MS = 650;
 
 function finishSplash() {
   const splash = document.getElementById("nova-splash");
-  splash?.remove();
+  splash?.classList.add("nova-splash-done");
   document.documentElement.classList.remove("nova-splash-pending");
   document.documentElement.classList.remove("nova-splash-exiting");
   clearScrollbarCompensation();

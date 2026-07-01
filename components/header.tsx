@@ -2,14 +2,16 @@
 
 import type { ChangeEvent } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useCart } from "@/components/cart-provider";
+import { useFavorites } from "@/components/favorites-provider";
 
 const NAV_LINKS = [
-  { label: "Shop", href: "/", active: true },
-  { label: "New", href: "#", active: false },
-  { label: "Deals", href: "#", active: false },
-  { label: "About", href: "#", active: false },
+  { label: "Shop", href: "/" },
+  { label: "Favorites", href: "/favorites" },
+  { label: "Deals", href: "#" },
+  { label: "About", href: "#" },
 ];
 
 function SearchIcon({ className }: { className?: string }) {
@@ -61,6 +63,40 @@ function Logo() {
   );
 }
 
+function FavoritesButton() {
+  const { favoritesCount, openFavorites } = useFavorites();
+
+  return (
+    <button
+      type="button"
+      onClick={openFavorites}
+      className="relative flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-[10px] border border-border bg-surface text-ink transition-all duration-300 ease-[cubic-bezier(0.25,0.1,0.25,1)] hover:bg-page-bg"
+      aria-label={`Favorites, ${favoritesCount} items`}
+    >
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 18 18"
+        fill="none"
+        aria-hidden="true"
+      >
+        <path
+          d="M9 15.35 3.3 9.65a3.25 3.25 0 0 1 0-4.6 3.25 3.25 0 0 1 4.6 0L9 6.15l1.1-1.1a3.25 3.25 0 0 1 4.6 4.6L9 15.35Z"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+      {favoritesCount > 0 && (
+        <span className="absolute -right-1.5 -top-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-accent px-1 text-[11px] font-semibold leading-none text-white">
+          {favoritesCount}
+        </span>
+      )}
+    </button>
+  );
+}
+
 function CartButton() {
   const { cartCount, openCart, lastAddAt } = useCart();
   const [badgePop, setBadgePop] = useState(false);
@@ -102,6 +138,7 @@ interface HeaderProps {
 }
 
 export function Header({ searchQuery, onSearchQueryChange }: HeaderProps) {
+  const pathname = usePathname();
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
 
   const searchInputProps = {
@@ -124,19 +161,26 @@ export function Header({ searchQuery, onSearchQueryChange }: HeaderProps) {
         <Logo />
 
         <nav className="hidden items-center gap-6 md:flex" aria-label="Main navigation">
-          {NAV_LINKS.map((link) => (
+          {NAV_LINKS.map((link) => {
+            const isActive =
+              link.href === "/"
+                ? pathname === "/"
+                : pathname.startsWith(link.href);
+
+            return (
             <Link
               key={link.label}
               href={link.href}
               className={`cursor-pointer text-sm transition-colors duration-300 ease-[cubic-bezier(0.25,0.1,0.25,1)] hover:text-ink ${
-                link.active
+                isActive
                   ? "font-semibold text-ink"
                   : "font-medium text-body"
               }`}
             >
               {link.label}
             </Link>
-          ))}
+            );
+          })}
         </nav>
 
         <div className="hidden flex-1 justify-end md:flex">
@@ -147,7 +191,8 @@ export function Header({ searchQuery, onSearchQueryChange }: HeaderProps) {
           </label>
         </div>
 
-        <div className="hidden md:block">
+        <div className="hidden items-center gap-2 md:flex">
+          <FavoritesButton />
           <CartButton />
         </div>
 
@@ -161,6 +206,7 @@ export function Header({ searchQuery, onSearchQueryChange }: HeaderProps) {
           >
             <SearchIcon />
           </button>
+          <FavoritesButton />
           <CartButton />
         </div>
       </div>

@@ -16,8 +16,6 @@ import {
   getMaxQuantity,
   mergeCartItem,
 } from "@/lib/cart-utils";
-import { CartDrawer } from "@/components/cart-drawer";
-import { CartToast } from "@/components/cart-toast";
 
 const STORAGE_KEY = "nova-cart";
 
@@ -220,11 +218,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <CartContext.Provider value={value}>
-      {children}
-      <CartDrawer />
-      <CartToast />
-    </CartContext.Provider>
+    <CartContext.Provider value={value}>{children}</CartContext.Provider>
   );
 }
 

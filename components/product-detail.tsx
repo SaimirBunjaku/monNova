@@ -8,6 +8,7 @@ import { formatCategoryLabel } from "@/lib/categories";
 import {
   getReviewCount,
   hasDiscount,
+  formatShippingValue,
 } from "@/lib/product-utils";
 import { Header } from "@/components/header";
 import { useCart } from "@/components/cart-provider";
@@ -78,7 +79,9 @@ export function ProductDetail({ product }: ProductDetailProps) {
   const brand = product.brand ?? "—";
   const sku = product.sku ?? "—";
   const warranty = product.warrantyInformation ?? "1 year";
-  const shipping = product.shippingInformation ?? "3–5 days";
+  const shipping = formatShippingValue(
+    product.shippingInformation ?? "3–5 days",
+  );
 
   return (
     <>

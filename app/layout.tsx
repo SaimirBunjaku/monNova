@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import { Inter, Plus_Jakarta_Sans } from "next/font/google";
 import { AppSplashDismiss } from "@/components/app-splash-dismiss";
 import { AppSplashShell } from "@/components/app-splash-shell";
+import { CartDrawer } from "@/components/cart-drawer";
 import { CartProvider } from "@/components/cart-provider";
+import { CartToast } from "@/components/cart-toast";
+import { FavoritesProvider } from "@/components/favorites-provider";
 import "./globals.css";
 
 const plusJakarta = Plus_Jakarta_Sans({
@@ -60,7 +63,11 @@ export default function RootLayout({
       <body className={`${plusJakarta.variable} ${inter.variable} antialiased`}>
         <script dangerouslySetInnerHTML={{ __html: SPLASH_BOOT_SCRIPT }} />
         <div id="nova-app">
-          <CartProvider>{children}</CartProvider>
+          <CartProvider>
+            <FavoritesProvider>{children}</FavoritesProvider>
+            <CartDrawer />
+            <CartToast />
+          </CartProvider>
         </div>
         <AppSplashShell />
         <AppSplashDismiss />

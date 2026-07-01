@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import type { CartItem } from "@/types/cart";
+import type { FavoriteItem } from "@/types/favorite";
 import { formatCurrency } from "@/lib/format";
-import { getLineTotal, getMaxQuantity } from "@/lib/cart-utils";
-import { calculateOriginalPrice, getEffectiveDiscount } from "@/lib/product-utils";
-import { QuantityStepper } from "@/components/quantity-stepper";
+import { getEffectiveDiscount, calculateOriginalPrice } from "@/lib/product-utils";
 import { useCart } from "@/components/cart-provider";
+import { useFavorites } from "@/components/favorites-provider";
+import { favoriteToProduct } from "@/types/favorite";
 
 function TrashIcon({ className }: { className?: string }) {
   return (
@@ -30,28 +30,22 @@ function TrashIcon({ className }: { className?: string }) {
   );
 }
 
-interface CartLineItemProps {
-  item: CartItem;
-  onQuantityChange: (productId: number, quantity: number) => void;
+interface FavoriteLineItemProps {
+  item: FavoriteItem;
   onRemove: (productId: number) => void;
 }
 
-export function CartLineItem({
-  item,
-  onQuantityChange,
-  onRemove,
-}: CartLineItemProps) {
-  const { closeCart } = useCart();
-  const lineTotal = getLineTotal(item);
-  const maxQuantity = getMaxQuantity(item);
+export function FavoriteLineItem({ item, onRemove }: FavoriteLineItemProps) {
+  const { addToCart } = useCart();
+  const { closeFavorites } = useFavorites();
   const hasDiscount = getEffectiveDiscount(item.discountPercentage) > 0;
-  const originalUnit = calculateOriginalPrice(item.price, item.discountPercentage);
+  const originalPrice = calculateOriginalPrice(item.price, item.discountPercentage);
 
   return (
     <article className="flex gap-3 border-b border-border py-4 last:border-b-0">
       <Link
         href={`/products/${item.productId}`}
-        onClick={closeCart}
+        onClick={closeFavorites}
         className="relative h-[72px] w-[72px] shrink-0 overflow-hidden rounded-xl bg-image-bg"
       >
         {item.thumbnail ? (
@@ -62,11 +56,7 @@ export function CartLineItem({
             sizes="72px"
             className="object-contain p-1.5"
           />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center text-xs text-muted">
-            No image
-          </div>
-        )}
+        ) : null}
       </Link>
 
       <div className="flex min-w-0 flex-1 flex-col">
@@ -74,7 +64,7 @@ export function CartLineItem({
           <div className="min-w-0">
             <Link
               href={`/products/${item.productId}`}
-              onClick={closeCart}
+              onClick={closeFavorites}
               className="line-clamp-2 text-sm font-semibold leading-snug text-ink hover:text-primary"
             >
               {item.title}
@@ -88,37 +78,56 @@ export function CartLineItem({
             type="button"
             onClick={() => onRemove(item.productId)}
             className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-lg text-muted transition-colors hover:bg-page-bg hover:text-accent"
-            aria-label={`Remove ${item.title} from cart`}
+            aria-label={`Remove ${item.title} from favorites`}
           >
             <TrashIcon />
           </button>
         </div>
 
-        <div className="mt-2 flex flex-wrap items-end justify-between gap-3">
-          <QuantityStepper
-            value={item.quantity}
-            onChange={(value) => onQuantityChange(item.productId, value)}
-            min={1}
-            max={maxQuantity}
-            size="compact"
-          />
-
-          <div className="text-right">
-            <p className="text-sm font-bold text-ink">{formatCurrency(lineTotal)}</p>
+        <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-baseline gap-2">
+            <span className="text-sm font-bold text-ink">
+              {formatCurrency(item.price)}
+            </span>
             {hasDiscount && (
-              <p className="text-xs text-muted line-through">
-                {formatCurrency(originalUnit * item.quantity)}
-              </p>
+              <span className="text-xs text-muted line-through">
+                {formatCurrency(originalPrice)}
+              </span>
             )}
           </div>
-        </div>
 
-        {item.quantity >= maxQuantity && maxQuantity < 99 && (
-          <p className="mt-1.5 text-[11px] font-medium text-accent">
-            Only {maxQuantity} left in stock
-          </p>
-        )}
+          <button
+            type="button"
+            onClick={() => addToCart(favoriteToProduct(item), 1)}
+            className="inline-flex h-8 cursor-pointer items-center justify-center rounded-[8px] bg-primary px-3 text-xs font-semibold text-white transition-colors hover:bg-primary-hover"
+          >
+            Add to cart
+          </button>
+        </div>
       </div>
     </article>
   );
 }
+
+function EmptyFavoritesIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      width="48"
+      height="48"
+      viewBox="0 0 48 48"
+      fill="none"
+      aria-hidden="true"
+    >
+      <path
+        d="M24 38.5 10.5 24.9a7.5 7.5 0 0 1 0-10.6 7.5 7.5 0 0 1 10.6 0L24 17.2l2.9-2.9a7.5 7.5 0 0 1 10.6 10.6L24 38.5Z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export { EmptyFavoritesIcon };
