@@ -45,6 +45,7 @@
 html {
   -webkit-text-size-adjust: 100%;
   scroll-behavior: smooth;
+  scrollbar-gutter: stable;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -279,4 +280,211 @@ button:disabled {
 
 .animate-cart-badge-pop {
   animation: cart-badge-pop 0.55s cubic-bezier(0.34, 1.45, 0.64, 1) both;
+}
+
+/* ── App splash ── */
+#nova-splash {
+  display: none;
+}
+
+html.nova-splash-pending,
+html.nova-splash-exiting {
+  overflow: hidden;
+}
+
+html.nova-splash-pending #nova-splash {
+  display: flex;
+}
+
+.nova-splash {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: radial-gradient(ellipse 80% 60% at 50% 40%, #1e1b2e 0%, #0f0e14 55%, #09080c 100%);
+  animation: nova-splash-enter 0.5s cubic-bezier(0.25, 0.1, 0.25, 1) both;
+  will-change: opacity;
+}
+
+.nova-splash-exit {
+  animation: nova-splash-exit 0.65s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  pointer-events: none;
+}
+
+.nova-splash-stars {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  animation: nova-splash-stars-drift 18s ease-in-out infinite alternate;
+}
+
+.nova-splash-stars-accent {
+  animation: nova-splash-twinkle 4s ease-in-out infinite alternate;
+}
+
+.nova-splash-stars-warm {
+  animation: nova-splash-twinkle 5.5s ease-in-out 1.2s infinite alternate;
+}
+
+.nova-splash-glow {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: min(520px, 90vw);
+  height: min(520px, 90vw);
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(91, 77, 240, 0.32) 0%,
+    rgba(91, 77, 240, 0.1) 38%,
+    transparent 68%
+  );
+  animation: nova-splash-glow-pulse 2.8s ease-in-out infinite alternate;
+}
+
+.nova-splash-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.nova-splash-logo-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  animation: nova-splash-logo-in 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.15s both;
+}
+
+.nova-splash-logo {
+  font-size: clamp(3rem, 10vw, 4.5rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: #ffffff;
+}
+
+.nova-splash-logo-accent {
+  color: var(--primary);
+  text-shadow: 0 0 40px rgba(91, 77, 240, 0.65);
+}
+
+.nova-splash-tagline {
+  font-family: var(--font-inter), system-ui, sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.nova-splash-line {
+  width: 0;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--primary) 20%,
+    #ffffff 50%,
+    var(--primary) 80%,
+    transparent
+  );
+  animation: nova-splash-line-expand 0.85s cubic-bezier(0.22, 1, 0.36, 1) 0.55s both;
+}
+
+@keyframes nova-splash-enter {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes nova-splash-exit {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(1.04);
+  }
+}
+
+@keyframes nova-splash-logo-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.94);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes nova-splash-line-expand {
+  from {
+    width: 0;
+    opacity: 0;
+  }
+
+  to {
+    width: min(140px, 40vw);
+    opacity: 1;
+  }
+}
+
+@keyframes nova-splash-glow-pulse {
+  from {
+    opacity: 0.65;
+    transform: translate(-50%, -50%) scale(0.92);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.06);
+  }
+}
+
+@keyframes nova-splash-stars-drift {
+  from {
+    transform: scale(1) translateY(0);
+  }
+
+  to {
+    transform: scale(1.03) translateY(-8px);
+  }
+}
+
+@keyframes nova-splash-twinkle {
+  from {
+    opacity: 0.35;
+  }
+
+  to {
+    opacity: 0.75;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nova-splash,
+  .nova-splash-stars,
+  .nova-splash-glow,
+  .nova-splash-logo-wrap,
+  .nova-splash-line {
+    animation: none !important;
+  }
 }

@@ -116,7 +116,10 @@ export function Header({ searchQuery, onSearchQueryChange }: HeaderProps) {
   };
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-surface">
+    <header
+      className="sticky top-0 z-50 border-b border-border bg-surface"
+      data-scrollbar-compensate
+    >
       <div className="mx-auto flex h-14 w-full max-w-[1200px] items-center gap-4 px-5 md:h-[66px] md:gap-8 md:px-7 lg:px-8">
         <Logo />
 

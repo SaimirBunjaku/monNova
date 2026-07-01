@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Plus_Jakarta_Sans } from "next/font/google";
+import { AppSplashDismiss } from "@/components/app-splash-dismiss";
+import { AppSplashShell } from "@/components/app-splash-shell";
 import { CartProvider } from "@/components/cart-provider";
 import "./globals.css";
 
@@ -22,15 +24,46 @@ export const metadata: Metadata = {
   description: "A modern e-commerce storefront built with Next.js",
 };
 
+const SPLASH_BOOT_SCRIPT = `
+(function () {
+  try {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    var doc = document.documentElement;
+    var body = document.body;
+    doc.classList.add("nova-splash-pending");
+    var scrollbarWidth = window.innerWidth - doc.clientWidth;
+    if (scrollbarWidth > 0) {
+      doc.style.setProperty("--nova-scrollbar-width", scrollbarWidth + "px");
+      body.style.paddingRight = scrollbarWidth + "px";
+    }
+  } catch (e) {}
+})();
+`;
+
+const SPLASH_CRITICAL_CSS = `
+  html.nova-splash-pending { overflow: hidden; }
+  html.nova-splash-pending #nova-splash { display: flex !important; }
+  #nova-splash { display: none; }
+  body { background-color: #fafafb; }
+`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <style dangerouslySetInnerHTML={{ __html: SPLASH_CRITICAL_CSS }} />
+      </head>
       <body className={`${plusJakarta.variable} ${inter.variable} antialiased`}>
-        <CartProvider>{children}</CartProvider>
+        <script dangerouslySetInnerHTML={{ __html: SPLASH_BOOT_SCRIPT }} />
+        <div id="nova-app">
+          <CartProvider>{children}</CartProvider>
+        </div>
+        <AppSplashShell />
+        <AppSplashDismiss />
       </body>
     </html>
   );
