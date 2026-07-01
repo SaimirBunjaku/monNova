@@ -12,7 +12,7 @@ export default function ProductNotFound() {
         </p>
         <Link
           href="/"
-          className="mt-6 inline-flex h-10 cursor-pointer items-center rounded-[10px] bg-primary px-5 text-sm font-semibold text-white transition-colors duration-300 hover:bg-primary-hover"
+          className="mt-6 inline-flex h-10 cursor-pointer items-center rounded-[10px] bg-primary px-5 text-sm font-semibold text-white transition-colors duration-300 hover:bg-primary-hover hover:text-white"
         >
           Back to shop
         </Link>

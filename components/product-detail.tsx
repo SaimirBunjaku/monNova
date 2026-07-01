@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import type { Product } from "@/types/product";
 import { formatCategoryLabel } from "@/lib/categories";
 import {
@@ -9,6 +10,7 @@ import {
   hasDiscount,
 } from "@/lib/product-utils";
 import { Header } from "@/components/header";
+import { useCart } from "@/components/cart-provider";
 import { Price, PriceDiscountBadge } from "@/components/price";
 import { ProductGallery } from "@/components/product-gallery";
 import { QuantityStepper } from "@/components/quantity-stepper";
@@ -63,6 +65,8 @@ interface ProductDetailProps {
 }
 
 export function ProductDetail({ product }: ProductDetailProps) {
+  const router = useRouter();
+  const { addToCart } = useCart();
   const [searchQuery, setSearchQuery] = useState("");
   const [quantity, setQuantity] = useState(1);
 
@@ -158,11 +162,13 @@ export function ProductDetail({ product }: ProductDetailProps) {
                 <QuantityStepper
                   value={quantity}
                   onChange={setQuantity}
+                  max={Math.min(product.stock, 99)}
                   className="shrink-0"
                 />
 
                 <button
                   type="button"
+                  onClick={() => addToCart(product, quantity)}
                   className="inline-flex h-11 min-w-0 flex-1 cursor-pointer items-center justify-center gap-2 rounded-[10px] bg-primary px-4 text-sm font-semibold text-white transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-primary-hover md:min-w-[160px] md:flex-[1.4]"
                 >
                   <CartIcon className="shrink-0" />
@@ -172,6 +178,10 @@ export function ProductDetail({ product }: ProductDetailProps) {
 
               <button
                 type="button"
+                onClick={() => {
+                  addToCart(product, quantity);
+                  router.push("/checkout");
+                }}
                 className="inline-flex h-11 w-full shrink-0 cursor-pointer items-center justify-center rounded-[10px] border border-border bg-surface px-6 text-sm font-semibold text-ink transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-primary/35 hover:bg-page-bg md:w-auto md:min-w-[140px]"
               >
                 Buy now

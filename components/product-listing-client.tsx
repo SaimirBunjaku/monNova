@@ -3,14 +3,13 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { Product } from "@/types/product";
-import { searchProducts } from "@/lib/api";
 import { normalizeCategorySlug } from "@/lib/categories";
+import { getCachedCatalog, loadCatalogWithCache } from "@/lib/listing-cache";
 import {
-  getCachedCatalog,
-  getCachedSearch,
-  loadCatalogWithCache,
-  loadSearchWithCache,
-} from "@/lib/listing-cache";
+  filterSearchResults,
+  sortProducts,
+  type SortOption,
+} from "@/lib/listing-utils";
 import { EmptyState } from "@/components/empty-state";
 import { ErrorState } from "@/components/error-state";
 import { Header } from "@/components/header";
@@ -45,15 +44,13 @@ export function ProductListingClient() {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [appliedSearch, setAppliedSearch] = useState("");
+  const [sortOption, setSortOption] = useState<SortOption>("popular");
   const [currentPage, setCurrentPage] = useState(1);
   const [allProducts, setAllProducts] = useState<Product[]>(
     () => cachedCatalog?.products ?? [],
   );
-  const [searchResults, setSearchResults] = useState<Product[]>([]);
   const [catalogLoading, setCatalogLoading] = useState(!cachedCatalog);
-  const [searchLoading, setSearchLoading] = useState(false);
   const [catalogError, setCatalogError] = useState<string | null>(null);
-  const [searchError, setSearchError] = useState<string | null>(null);
 
   const categoryParam = searchParams.get("category");
   const selectedCategory = categoryParam
@@ -103,67 +100,20 @@ export function ProductListingClient() {
   }, [searchQuery, router]);
 
   useEffect(() => {
-    if (!appliedSearch) {
-      setSearchResults([]);
-      setSearchError(null);
-      return;
-    }
-
-    let cancelled = false;
-    const cached = getCachedSearch(appliedSearch);
-
-    if (cached) {
-      setSearchResults(cached);
-      setSearchLoading(false);
-      setSearchError(null);
-      return;
-    }
-
-    const runSearch = async () => {
-      setSearchLoading(true);
-      setSearchError(null);
-
-      try {
-        const products = await loadSearchWithCache(appliedSearch, async () => {
-          const data = await searchProducts(appliedSearch);
-          return data.products;
-        });
-
-        if (!cancelled) {
-          setSearchResults(products);
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setSearchResults([]);
-          setSearchError(
-            err instanceof Error ? err.message : "Failed to search products.",
-          );
-        }
-      } finally {
-        if (!cancelled) {
-          setSearchLoading(false);
-        }
-      }
-    };
-
-    void runSearch();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [appliedSearch]);
-
-  useEffect(() => {
     setCurrentPage(1);
-  }, [appliedSearch, selectedCategory]);
+  }, [appliedSearch, selectedCategory, sortOption]);
 
   const filteredProducts = useMemo(() => {
+    let products: Product[];
+
     if (appliedSearch) {
-      return searchResults;
+      products = filterSearchResults(allProducts, appliedSearch);
+    } else {
+      products = filterByCategory(allProducts, selectedCategory);
     }
 
-    return filterByCategory(allProducts, selectedCategory);
-  }, [allProducts, appliedSearch, searchResults, selectedCategory]);
+    return sortProducts(products, sortOption);
+  }, [allProducts, appliedSearch, selectedCategory, sortOption]);
 
   const totalPages = Math.max(
     1,
@@ -200,36 +150,7 @@ export function ProductListingClient() {
     router.replace("/", { scroll: false });
   };
 
-  const handleRetry = () => {
-    if (catalogError) {
-      void loadCatalog();
-      return;
-    }
-
-    if (appliedSearch) {
-      setSearchError(null);
-      setSearchLoading(true);
-      searchProducts(appliedSearch)
-        .then((data) => {
-          setSearchResults(data.products);
-        })
-        .catch((err) =>
-          setSearchError(
-            err instanceof Error ? err.message : "Failed to search products.",
-          ),
-        )
-        .finally(() => setSearchLoading(false));
-    }
-  };
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  const loading =
-    (catalogLoading && allProducts.length === 0) || searchLoading;
-  const error = catalogError ?? searchError;
+  const loading = catalogLoading && allProducts.length === 0;
   const itemCount = filteredProducts.length;
   const isFiltered = Boolean(appliedSearch || selectedCategory);
 
@@ -247,7 +168,7 @@ export function ProductListingClient() {
               <h1 className="min-w-0 font-heading text-2xl font-bold leading-none text-ink">
                 All products
               </h1>
-              <SortButton />
+              <SortButton value={sortOption} onChange={setSortOption} />
             </div>
             <p className="text-sm font-medium text-muted">
               {loading ? "Loading..." : `${itemCount} items`}
@@ -263,11 +184,11 @@ export function ProductListingClient() {
         <div className={`py-8 ${totalPages > 1 ? "pb-28 md:pb-32" : ""}`}>
           {loading && <ProductGridSkeleton count={PAGE_SIZE} />}
 
-          {!loading && error && (
-            <ErrorState message={error} onRetry={handleRetry} />
+          {!loading && catalogError && (
+            <ErrorState message={catalogError} onRetry={() => void loadCatalog()} />
           )}
 
-          {!loading && !error && filteredProducts.length === 0 && (
+          {!loading && !catalogError && filteredProducts.length === 0 && (
             <EmptyState
               title="No products found"
               message={
@@ -279,7 +200,7 @@ export function ProductListingClient() {
             />
           )}
 
-          {!loading && !error && filteredProducts.length > 0 && (
+          {!loading && !catalogError && filteredProducts.length > 0 && (
             <>
               <ProductGrid products={paginatedProducts} pageKey={currentPage} />
               {totalPages > 1 && (
@@ -287,7 +208,10 @@ export function ProductListingClient() {
                   currentPage={currentPage}
                   totalPages={totalPages}
                   totalItems={itemCount}
-                  onPageChange={handlePageChange}
+                  onPageChange={(page) => {
+                    setCurrentPage(page);
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }}
                 />
               )}
             </>

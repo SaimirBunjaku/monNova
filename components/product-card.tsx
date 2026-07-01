@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import type { Product } from "@/types/product";
 import { formatDiscount, getReviewCount, hasDiscount } from "@/lib/product-utils";
+import { useCart } from "@/components/cart-provider";
 import { Price } from "@/components/price";
 import { Rating } from "@/components/rating";
 
@@ -103,6 +104,7 @@ export function ProductCard({
   primaryButton = false,
   animationDelay = 0,
 }: ProductCardProps) {
+  const { addToCart } = useCart();
   const reviewCount = getReviewCount(product);
   const showDiscount = hasDiscount(product);
   const hasImage = Boolean(product.thumbnail);
@@ -174,7 +176,10 @@ export function ProductCard({
 
         <button
           type="button"
-          onClick={stopCardNavigation}
+          onClick={(event) => {
+            stopCardNavigation(event);
+            addToCart(product, 1);
+          }}
           className={`group/btn mt-auto flex h-10 w-full cursor-pointer items-center justify-center gap-2 rounded-[10px] text-sm font-semibold transition-[background-color,border-color,color] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
             primaryButton
               ? "bg-primary text-white hover:bg-primary-hover"

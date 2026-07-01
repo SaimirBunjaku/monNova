@@ -2,7 +2,8 @@
 
 import type { ChangeEvent } from "react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useCart } from "@/components/cart-provider";
 
 const NAV_LINKS = [
   { label: "Shop", href: "/", active: true },
@@ -10,8 +11,6 @@ const NAV_LINKS = [
   { label: "Deals", href: "#", active: false },
   { label: "About", href: "#", active: false },
 ];
-
-const CART_COUNT = 3;
 
 function SearchIcon({ className }: { className?: string }) {
   return (
@@ -63,16 +62,34 @@ function Logo() {
 }
 
 function CartButton() {
+  const { cartCount, openCart, lastAddAt } = useCart();
+  const [badgePop, setBadgePop] = useState(false);
+
+  useEffect(() => {
+    if (!lastAddAt) {
+      return;
+    }
+
+    setBadgePop(true);
+    const timer = window.setTimeout(() => setBadgePop(false), 550);
+    return () => window.clearTimeout(timer);
+  }, [lastAddAt]);
+
   return (
     <button
       type="button"
+      onClick={openCart}
       className="relative flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-[10px] border border-border bg-surface text-ink transition-all duration-300 ease-[cubic-bezier(0.25,0.1,0.25,1)] hover:bg-page-bg"
-      aria-label={`Cart, ${CART_COUNT} items`}
+      aria-label={`Cart, ${cartCount} items`}
     >
       <CartIcon />
-      {CART_COUNT > 0 && (
-        <span className="absolute -right-1.5 -top-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-1 text-[11px] font-semibold leading-none text-white">
-          {CART_COUNT}
+      {cartCount > 0 && (
+        <span
+          className={`absolute -right-1.5 -top-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-1 text-[11px] font-semibold leading-none text-white ${
+            badgePop ? "animate-cart-badge-pop" : ""
+          }`}
+        >
+          {cartCount}
         </span>
       )}
     </button>
